@@ -22,13 +22,9 @@
           - name: Generate the build matrix
             id: gen-matrix
             run: |
-              echo "${PULL_SECRET}" > ${PULL_SECRET_FILE}
               ${GITHUB_WORKSPACE}/build-matrix.sh
               matrix=$(cat ${GITHUB_WORKSPACE}/build-matrix.json)
               echo "::set-output name=matrix::${matrix}"
-            env:
-              PULL_SECRET: ${{ secrets.PULL_SECRET }}
-              PULL_SECRET_FILE: pull-secret
     
       build-image:
         needs: build-matrix
