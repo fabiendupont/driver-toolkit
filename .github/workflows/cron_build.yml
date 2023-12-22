@@ -28,6 +28,9 @@
       build-image:
         needs: build-matrix
         runs-on: ubuntu-latest
+        permissions:
+          contents: read
+          packages: write
         strategy:
           matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
           max-parallel: 1
