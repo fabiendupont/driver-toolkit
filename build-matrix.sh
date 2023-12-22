@@ -6,7 +6,7 @@ echo -n -e "{ \"version\": [ " > $MATRIX_FILE
 
 # Get the list of kernels to build
 COUNT=0
-for i in $(docker run --rm quay.io/centos/centos:stream9 dnf repoquery kernel | cut -d ':' -f 2); do
+for i in $(docker run --rm quay.io/centos/centos:stream9 dnf repoquery --qf "%{VERSION}-%{RELEASE}" kernel | cut -d ':' -f 2); do
     if [ $COUNT -gt 0 ]; then
         echo -n -e ", " >> $MATRIX_FILE
     fi
