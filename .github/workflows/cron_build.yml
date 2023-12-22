@@ -64,14 +64,6 @@
               username: ${{ github.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
 
-          - name: Extract metadata (tags, labels) for Docker
-            if: steps.check-existing-image.outcome == 'failure'
-            id: meta
-            uses: docker/metadata-action@v5
-            with:
-              images: |
-                ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}
-    
           - name: "Build and push driver-toolkit:${{ matrix.version }}"
             if: steps.check-existing-image.outcome == 'failure'
             uses: docker/build-push-action@v5
@@ -79,7 +71,6 @@
               context: .
               platforms: linux/amd64,linux/arm64
               push: true
-              tags: ${{ steps.meta.outputs.tags }}
-              labels: ${{ steps.meta.outputs.labels }}
+              tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.version }}
               build-args: |
                 "KERNEL_VERSION=${{ matrix.version }}"
