@@ -17,7 +17,7 @@ RUN dnf -y install dnf-plugin-config-manager \
             kernel-rt-modules-extra-${KERNEL_VERSION}; \
     fi \
     && export INSTALLED_KERNEL=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}" kernel-core) \
-    && export GCC_VERSION=$(cat /lib/modules/${INSTALLED_KERNEL}/config | grep -Eo "CONFIG_CC_VERSION_TEXT=\"gcc \(GCC\) ([0-9\.]+)" | grep -Eo "([0-9\.]+)") \
+    && export GCC_VERSION=$(cat /lib/modules/${INSTALLED_KERNEL}/config | grep -Eo "gcc \(GCC\) ([0-9\.]+)" | grep -Eo "([0-9\.]+)") \
     && dnf -y install \
         binutils \
         diffutils \
@@ -26,7 +26,7 @@ RUN dnf -y install dnf-plugin-config-manager \
         kabi-dw kernel-abi-stablelists \
         keyutils \
         kmod \
-        gcc${GCC_VERSION:+-}${GCC_VERSION} \
+        gcc-${GCC_VERSION} \
         git \
         make \
         mokutil \
