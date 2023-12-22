@@ -1,0 +1,94 @@
+---
+    name: Build Driver Toolkit images
+    
+    on:
+      schedule:
+        - cron: "0 0 * * *"
+      workflow_dispatch:
+    
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    
+    jobs:
+      build-matrix:
+        runs-on: ubuntu-latest
+        outputs:
+          matrix: ${{ steps.gen-matrix.outputs.matrix }}
+        steps:
+          - name: Checkout current repository to get the matrix file
+            uses: actions/checkout@v3
+    
+          - name: Generate the build matrix
+            id: gen-matrix
+            run: |
+              echo "${PULL_SECRET}" > ${PULL_SECRET_FILE}
+              ${GITHUB_WORKSPACE}/build-matrix.sh
+              matrix=$(cat ${GITHUB_WORKSPACE}/build-matrix.json)
+              echo "::set-output name=matrix::${matrix}"
+            env:
+              PULL_SECRET: ${{ secrets.PULL_SECRET }}
+              PULL_SECRET_FILE: pull-secret
+    
+      build-image:
+        needs: build-matrix
+        runs-on: ubuntu-latest
+        strategy:
+          matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+          max-parallel: 4
+          fail-fast: false
+        steps:
+          - name: Check if driver-toolkit image exists for kernel ${{ matrix.versions.kernel }} on ${{ matrix.versions.arch_tag }}
+            id: check-existing-image
+            continue-on-error: true
+            run: curl --fail https://${{ env.REGISTRY }}/v2/${{ github.repository }}/manifests/${{ matrix.versions.kernel }}.${{ matrix.versions.arch_tag }}
+    
+          - name: Checkout current repository for the Dockerfiles
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: actions/checkout@v4
+    
+          - name: Lint Dockerfile
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: hadolint/hadolint-action@v3.1.0
+            with:
+              dockerfile: ./Dockerfile
+              failure-threshold: error
+    
+          - name: Set up QEMU
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: docker/setup-qemu-action@v3
+    
+          - name: Set up Docker Buildx
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: docker/setup-buildx-action@v3
+    
+          - name: Login to the container registry
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: docker/login-action@v3
+            with:
+              registry: ${{ env.REGISTRY }}
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+    
+          - name: Build and push driver-toolkit:${{ matrix.versions.kernel }}.${{ matrix.versions.arch_tag }}
+            if: |
+              steps.check-base-image-digest.outcome == 'failure' ||
+              steps.check-existing-image.outcome == 'failure'
+            uses: docker/build-push-action@v5
+            with:
+              context: .
+              push: true
+              tags: "ghcr.io/${{ github.repository }}:${{ matrix.versions.kernel }}"
+              platforms: linux/amd64,linux/arm64
+              build-args: |
+                "KERNEL_VERSION=${{ matrix.versions.kernel }}"
