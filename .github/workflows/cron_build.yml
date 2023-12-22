@@ -50,7 +50,6 @@
               steps.check-existing-image.outcome == 'failure'
             uses: hadolint/hadolint-action@v3.1.0
             with:
-              dockerfile: ./Containerfile
               failure-threshold: error
     
           - name: Set up QEMU
