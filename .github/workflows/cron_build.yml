@@ -23,7 +23,7 @@
             id: gen-matrix
             run: |
               ${GITHUB_WORKSPACE}/build-matrix.sh
-              cat ${GITHUB_WORKSPACE}/build-matrix.json >> $GITHUB_OUTPUT
+              echo "matrix=$(cat ${GITHUB_WORKSPACE}/build-matrix.json)" >> $GITHUB_OUTPUT
     
       build-image:
         needs: build-matrix
@@ -33,10 +33,10 @@
           max-parallel: 4
           fail-fast: false
         steps:
-          - name: Check if driver-toolkit image exists for kernel ${{ matrix.versions.kernel }} on ${{ matrix.versions.arch_tag }}
+          - name: Check if driver-toolkit image exists for kernel ${{ matrix.version }}
             id: check-existing-image
             continue-on-error: true
-            run: curl --fail https://${{ env.REGISTRY }}/v2/${{ github.repository }}/manifests/${{ matrix.versions.kernel }}.${{ matrix.versions.arch_tag }}
+            run: curl --fail https://${{ env.REGISTRY }}/v2/${{ github.repository }}/manifests/${{ matrix.version }}
     
           - name: Checkout current repository for the Dockerfiles
             if: |
@@ -75,7 +75,7 @@
               username: ${{ github.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
     
-          - name: Build and push driver-toolkit:${{ matrix.versions.kernel }}.${{ matrix.versions.arch_tag }}
+          - name: Build and push driver-toolkit:${{ matrix.version }}
             if: |
               steps.check-base-image-digest.outcome == 'failure' ||
               steps.check-existing-image.outcome == 'failure'
@@ -83,7 +83,7 @@
             with:
               context: .
               push: true
-              tags: "ghcr.io/${{ github.repository }}:${{ matrix.versions.kernel }}"
+              tags: "ghcr.io/${{ github.repository }}:${{ matrix.version }}"
               platforms: linux/amd64,linux/arm64
               build-args: |
-                "KERNEL_VERSION=${{ matrix.versions.kernel }}"
+                "KERNEL_VERSION=${{ matrix.version }}"

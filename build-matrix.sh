@@ -2,7 +2,7 @@
 
 MATRIX_FILE="build-matrix.json"
 
-echo -n -e "{ \"versions\": [ " > $MATRIX_FILE
+echo -n -e "{ \"version\": [ " > $MATRIX_FILE
 
 # Get the list of kernels to build
 COUNT=0
