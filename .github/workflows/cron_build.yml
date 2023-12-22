@@ -23,8 +23,7 @@
             id: gen-matrix
             run: |
               ${GITHUB_WORKSPACE}/build-matrix.sh
-              matrix=$(cat ${GITHUB_WORKSPACE}/build-matrix.json)
-              echo "::set-output name=matrix::${matrix}"
+              cat ${GITHUB_WORKSPACE}/build-matrix.json >> $GITHUB_OUTPUT
     
       build-image:
         needs: build-matrix
