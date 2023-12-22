@@ -19,16 +19,13 @@ technologies.
 The list of kernel packages in the Driver Toolkit includes the following and
 their dependencies:
 
-* `kernel-core`
 * `kernel-devel`
-* `kernel-headers`
 * `kernel-modules`
 * `kernel-modules-extra`
 
 In addition, the Driver Toolkit also includes the corresponding real-time
 kernel packages:
 
-* `kernel-rt-core`
 * `kernel-rt-devel`
 * `kernel-rt-modules`
 * `kernel-rt-modules-extra`
@@ -37,7 +34,7 @@ The Driver Toolkit also has several tools which are commonly needed to build
 and install kernel modules, including:
 
 * `elfutils-libelf-devel`
-* ` kmod`
+* `kmod`
 * `binutils`
 * `kabi-dw`
 * `kernel-abi-stablelists`
@@ -75,7 +72,7 @@ recommend using `driver-toolkit` as a builder image in a multi-stage build and
 to copy only the required files to the final image, in order to save storage.
 
 For that image to be usable for further builds, we simply push it to Quay.io.
-1
+
 ```shell
 podman login ghrc.io
 podman push ghcr.io/fabiendupont/driver-toolkit:${KERNEL_VERSION}
