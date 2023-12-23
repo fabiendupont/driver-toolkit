@@ -28,6 +28,7 @@
       build-image:
         needs: build-matrix
         runs-on: ubuntu-latest
+        if: ${{ needs.build-matrix.outputs.matrix.version != '[]' && needs.build-matrix.outputs.matrix.version != '' }}
         permissions:
           contents: read
           packages: write
