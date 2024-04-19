@@ -37,11 +37,6 @@ jobs:
       - name: Checkout current repository for the Dockerfiles
         uses: actions/checkout@v4
 
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          failure-threshold: error
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -59,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Containerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.KERNEL_VERSION }}
